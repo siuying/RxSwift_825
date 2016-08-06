@@ -15,24 +15,24 @@ import RxSwift
 RxCocoa URL errors.
 */
 public enum RxCocoaURLError
-    : Swift.Error
+    : ErrorType
     , CustomDebugStringConvertible {
     /**
     Unknown error occurred.
     */
-    case unknown
+    case Unknown
     /**
     Response is not NSHTTPURLResponse
     */
-    case nonHTTPResponse(response: URLResponse)
+    case NonHTTPResponse(response: NSURLResponse)
     /**
     Response is not successful. (not in `200 ..< 300` range)
     */
-    case httpRequestFailed(response: HTTPURLResponse, data: Data?)
+    case HTTPRequestFailed(response: NSHTTPURLResponse, data: NSData?)
     /**
     Deserialization error.
     */
-    case deserializationError(error: Swift.Error)
+    case DeserializationError(error: ErrorType)
 }
 
 public extension RxCocoaURLError {
@@ -41,28 +41,28 @@ public extension RxCocoaURLError {
     */
     public var debugDescription: String {
         switch self {
-        case .unknown:
+        case .Unknown:
             return "Unknown error has occurred."
-        case let .nonHTTPResponse(response):
+        case let .NonHTTPResponse(response):
             return "Response is not NSHTTPURLResponse `\(response)`."
-        case let .httpRequestFailed(response, _):
+        case let .HTTPRequestFailed(response, _):
             return "HTTP request failed with `\(response.statusCode)`."
-        case let .deserializationError(error):
+        case let .DeserializationError(error):
             return "Error during deserialization of the response: \(error)"
         }
     }
 }
 
-func escapeTerminalString(_ value: String) -> String {
-    return value.replacingOccurrences(of: "\"", with: "\\\"", options:[], range: nil)
+func escapeTerminalString(value: String) -> String {
+    return value.stringByReplacingOccurrencesOfString("\"", withString: "\\\"", options:[], range: nil)
 }
 
-func convertURLRequestToCurlCommand(_ request: URLRequest) -> String {
-    let method = request.httpMethod ?? "GET"
+func convertURLRequestToCurlCommand(request: NSURLRequest) -> String {
+    let method = request.HTTPMethod ?? "GET"
     var returnValue = "curl -X \(method) "
 
-    if  request.httpMethod == "POST" && request.httpBody != nil {
-        let maybeBody = NSString(data: request.httpBody!, encoding: String.Encoding.utf8.rawValue) as? String
+    if  request.HTTPMethod == "POST" && request.HTTPBody != nil {
+        let maybeBody = NSString(data: request.HTTPBody!, encoding: NSUTF8StringEncoding) as? String
         if let body = maybeBody {
             returnValue += "-d \"\(escapeTerminalString(body))\" "
         }
@@ -74,7 +74,7 @@ func convertURLRequestToCurlCommand(_ request: URLRequest) -> String {
         returnValue += "\n    -H \"\(escapedKey): \(escapedValue)\" "
     }
 
-    let URLString = request.url?.absoluteString ?? "<unknown url>"
+    let URLString = request.URL?.absoluteString ?? "<unknown url>"
 
     returnValue += "\n\"\(escapeTerminalString(URLString))\""
 
@@ -83,10 +83,10 @@ func convertURLRequestToCurlCommand(_ request: URLRequest) -> String {
     return returnValue
 }
 
-func convertResponseToString(_ data: Data!, _ response: URLResponse!, _ error: NSError!, _ interval: TimeInterval) -> String {
+func convertResponseToString(data: NSData!, _ response: NSURLResponse!, _ error: NSError!, _ interval: NSTimeInterval) -> String {
     let ms = Int(interval * 1000)
 
-    if let response = response as? HTTPURLResponse {
+    if let response = response as? NSHTTPURLResponse {
         if 200 ..< 300 ~= response.statusCode {
             return "Success (\(ms)ms): Status \(response.statusCode)"
         }
@@ -105,7 +105,7 @@ func convertResponseToString(_ data: Data!, _ response: URLResponse!, _ error: N
     return "<Unhandled response from server>"
 }
 
-extension URLSession {
+extension NSURLSession {
     /**
     Observable sequence of responses for URL request.
     
@@ -118,37 +118,37 @@ extension URLSession {
     - parameter request: URL request.
     - returns: Observable sequence of URL responses.
     */
-    // @warn_unused_result(message:"http://git.io/rxs.uo")
-    public func rx_response(_ request: URLRequest) -> Observable<(Data, HTTPURLResponse)> {
+    @warn_unused_result(message="http://git.io/rxs.uo")
+    public func rx_response(request: NSURLRequest) -> Observable<(NSData, NSHTTPURLResponse)> {
         return Observable.create { observer in
 
             // smart compiler should be able to optimize this out
-            var d: Date?
+            var d: NSDate?
 
             if Logging.URLRequests(request) {
-                d = Date()
+                d = NSDate()
             }
 
-            let task = self.dataTask(with: request) { (data, response, error) in
+            let task = self.dataTaskWithRequest(request) { (data, response, error) in
 
                 if Logging.URLRequests(request) {
-                    let interval = Date().timeIntervalSince(d ?? Date())
+                    let interval = NSDate().timeIntervalSinceDate(d ?? NSDate())
                     print(convertURLRequestToCurlCommand(request))
                     print(convertResponseToString(data, response, error, interval))
                 }
                 
-                guard let response = response, let data = data else {
-                    observer.on(.error(error ?? RxCocoaURLError.unknown))
+                guard let response = response, data = data else {
+                    observer.on(.Error(error ?? RxCocoaURLError.Unknown))
                     return
                 }
 
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    observer.on(.error(RxCocoaURLError.nonHTTPResponse(response: response)))
+                guard let httpResponse = response as? NSHTTPURLResponse else {
+                    observer.on(.Error(RxCocoaURLError.NonHTTPResponse(response: response)))
                     return
                 }
 
-                observer.on(.next(data, httpResponse))
-                observer.on(.completed)
+                observer.on(.Next(data, httpResponse))
+                observer.on(.Completed)
             }
 
 
@@ -174,14 +174,14 @@ extension URLSession {
     - parameter request: URL request.
     - returns: Observable sequence of response data.
     */
-    // @warn_unused_result(message:"http://git.io/rxs.uo")
-    public func rx_data(_ request: URLRequest) -> Observable<Data> {
-        return rx_response(request).map { (data, response) -> Data in
+    @warn_unused_result(message="http://git.io/rxs.uo")
+    public func rx_data(request: NSURLRequest) -> Observable<NSData> {
+        return rx_response(request).map { (data, response) -> NSData in
             if 200 ..< 300 ~= response.statusCode {
                 return data
             }
             else {
-                throw RxCocoaURLError.httpRequestFailed(response: response, data: data)
+                throw RxCocoaURLError.HTTPRequestFailed(response: response, data: data)
             }
         }
     }
@@ -203,13 +203,13 @@ extension URLSession {
     - parameter request: URL request.
     - returns: Observable sequence of response JSON.
     */
-    // @warn_unused_result(message:"http://git.io/rxs.uo")
-    public func rx_JSON(_ request: URLRequest) -> Observable<AnyObject> {
+    @warn_unused_result(message="http://git.io/rxs.uo")
+    public func rx_JSON(request: NSURLRequest) -> Observable<AnyObject> {
         return rx_data(request).map { (data) -> AnyObject in
             do {
-                return try JSONSerialization.jsonObject(with: data, options: [])
+                return try NSJSONSerialization.JSONObjectWithData(data, options: [])
             } catch let error {
-                throw RxCocoaURLError.deserializationError(error: error)
+                throw RxCocoaURLError.DeserializationError(error: error)
             }
         }
     }
@@ -231,8 +231,8 @@ extension URLSession {
     - parameter URL: URL of `NSURLRequest` request.
     - returns: Observable sequence of response JSON.
     */
-    // @warn_unused_result(message:"http://git.io/rxs.uo")
-    public func rx_JSON(_ URL: Foundation.URL) -> Observable<AnyObject> {
-        return rx_JSON(URLRequest(url: URL))
+    @warn_unused_result(message="http://git.io/rxs.uo")
+    public func rx_JSON(URL: NSURL) -> Observable<AnyObject> {
+        return rx_JSON(NSURLRequest(URL: URL))
     }
 }

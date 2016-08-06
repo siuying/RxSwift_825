@@ -23,9 +23,9 @@ extension UISwitch {
         return UIControl.rx_value(
             self,
             getter: { uiSwitch in
-                uiSwitch.isOn
+                uiSwitch.on
             }, setter: { uiSwitch, value in
-                uiSwitch.isOn = value
+                uiSwitch.on = value
             }
         )
     }

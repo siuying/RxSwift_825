@@ -26,30 +26,30 @@ class SkipUntilSinkOther<ElementType, Other, O: ObserverType where O.E == Elemen
     init(parent: Parent) {
         _parent = parent
         #if TRACE_RESOURCES
-            let _ = AtomicIncrement(&resourceCount)
+            AtomicIncrement(&resourceCount)
         #endif
     }
 
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next:
+        case .Next:
             _parent._forwardElements = true
             _subscription.dispose()
-        case .error(let e):
-            _parent.forwardOn(.error(e))
+        case .Error(let e):
+            _parent.forwardOn(.Error(e))
             _parent.dispose()
-        case .completed:
+        case .Completed:
             _subscription.dispose()
         }
     }
     
     #if TRACE_RESOURCES
     deinit {
-        let _ = AtomicDecrement(&resourceCount)
+        AtomicDecrement(&resourceCount)
     }
     #endif
 
@@ -75,20 +75,20 @@ class SkipUntilSink<ElementType, Other, O: ObserverType where O.E == ElementType
         super.init(observer: observer)
     }
     
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next:
+        case .Next:
             if _forwardElements {
                 forwardOn(event)
             }
-        case .error:
+        case .Error:
             forwardOn(event)
             dispose()
-        case .completed:
+        case .Completed:
             if _forwardElements {
                 forwardOn(event)
             }
@@ -117,7 +117,7 @@ class SkipUntil<Element, Other>: Producer<Element> {
         _other = other
     }
     
-    override func run<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = SkipUntilSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

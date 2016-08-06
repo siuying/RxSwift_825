@@ -11,9 +11,9 @@ import Foundation
 /**
 Sequence that repeats `repeatedValue` infinite number of times.
 */
-struct InfiniteSequence<E> : Sequence {
+struct InfiniteSequence<E> : SequenceType {
     typealias Element = E
-    typealias Iterator = AnyIterator<E>
+    typealias Generator = AnyGenerator<E>
     
     private let _repeatedValue: E
     
@@ -21,9 +21,9 @@ struct InfiniteSequence<E> : Sequence {
         _repeatedValue = repeatedValue
     }
     
-    func makeIterator() -> Iterator {
+    func generate() -> Generator {
         let repeatedValue = _repeatedValue
-        return AnyIterator {
+        return AnyGenerator {
             return repeatedValue
         }
     }

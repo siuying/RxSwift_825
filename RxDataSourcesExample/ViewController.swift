@@ -91,7 +91,7 @@ class ViewController: UIViewController {
         
         let dataSource = RxCollectionViewSectionedReloadDataSource<CellSection>()
         dataSource.configureCell = { datasource, collectionView, indexPath, item in
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? DataCell else {
+            guard let cell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as? DataCell else {
                 fatalError("invalide cell")
             }
             cell.value?.text = item.title
@@ -99,7 +99,7 @@ class ViewController: UIViewController {
         }
        
         dataSource.supplementaryViewFactory = { (ds ,cv, kind, ip) in
-            let section = cv.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "Section", for: ip) as! DataSectionView
+            let section = cv.dequeueReusableSupplementaryViewOfKind(kind, withReuseIdentifier: "Section", forIndexPath: ip)as! DataSectionView
             
             section.value!.text = "\(ds.sectionAtIndex(ip.section).header)"
             

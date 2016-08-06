@@ -30,15 +30,15 @@ class GestureTarget<Recognizer: UIGestureRecognizer>: RxTarget {
         super.init()
         
         gestureRecognizer.addTarget(self, action: selector)
-
-        let method = self.method(for: selector)
+        
+        let method = self.methodForSelector(selector)
         if method == nil {
             fatalError("Can't find method")
         }
     }
     
-    func eventHandler(_ sender: UIGestureRecognizer!) {
-        if let callback = self.callback, let gestureRecognizer = self.gestureRecognizer {
+    func eventHandler(sender: UIGestureRecognizer!) {
+        if let callback = self.callback, gestureRecognizer = self.gestureRecognizer {
             callback(gestureRecognizer)
         }
     }
@@ -63,13 +63,13 @@ extension Reactive where Self: UIGestureRecognizer {
             MainScheduler.ensureExecutingOnScheduler()
 
             guard let control = self else {
-                observer.on(.completed)
+                observer.on(.Completed)
                 return NopDisposable.instance
             }
             
             let observer = GestureTarget(control) {
                 control in
-                observer.on(.next(control))
+                observer.on(.Next(control))
             }
             
             return observer

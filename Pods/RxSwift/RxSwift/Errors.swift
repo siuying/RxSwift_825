@@ -15,36 +15,36 @@ let RxCompositeFailures = "RxCompositeFailures"
 Generic Rx error codes.
 */
 public enum RxError
-    : Swift.Error
+    : ErrorType
     , CustomDebugStringConvertible {
     /**
     Unknown error occured.
     */
-    case unknown
+    case Unknown
     /**
     Performing an action on disposed object.
     */
-    case disposed(object: AnyObject)
+    case Disposed(object: AnyObject)
     /**
     Aritmetic overflow error.
     */
-    case overflow
+    case Overflow
     /**
     Argument out of range error.
     */
-    case argumentOutOfRange
+    case ArgumentOutOfRange
     /**
     Sequence doesn't contain any elements.
     */
-    case noElements
+    case NoElements
     /**
     Sequence contains more than one element.
     */
-    case moreThanOneElement
+    case MoreThanOneElement
     /**
      Timeout error.
      */
-    case timeout
+    case Timeout
 }
 
 public extension RxError {
@@ -53,19 +53,19 @@ public extension RxError {
     */
     public var debugDescription: String {
         switch self {
-        case .unknown:
+        case .Unknown:
             return "Unknown error occured."
-        case .disposed(let object):
+        case .Disposed(let object):
             return "Object `\(object)` was already disposed."
-        case .overflow:
+        case .Overflow:
             return "Arithmetic overflow occured."
-        case .argumentOutOfRange:
+        case .ArgumentOutOfRange:
             return "Argument out of range."
-        case .noElements:
+        case .NoElements:
             return "Sequence doesn't contain any elements."
-        case .moreThanOneElement:
+        case .MoreThanOneElement:
             return "Sequence contains more than one element."
-        case .timeout:
+        case .Timeout:
             return "Sequence timeout."
         }
     }

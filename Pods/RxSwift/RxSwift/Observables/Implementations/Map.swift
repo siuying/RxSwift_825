@@ -21,22 +21,22 @@ class MapSink<SourceType, O : ObserverType> : Sink<O>, ObserverType {
         super.init(observer: observer)
     }
 
-    func on(_ event: Event<SourceType>) {
+    func on(event: Event<SourceType>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             do {
                 let mappedElement = try _selector(element)
-                forwardOn(.next(mappedElement))
+                forwardOn(.Next(mappedElement))
             }
             catch let e {
-                forwardOn(.error(e))
+                forwardOn(.Error(e))
                 dispose()
             }
-        case .error(let error):
-            forwardOn(.error(error))
+        case .Error(let error):
+            forwardOn(.Error(error))
             dispose()
-        case .completed:
-            forwardOn(.completed)
+        case .Completed:
+            forwardOn(.Completed)
             dispose()
         }
     }
@@ -58,22 +58,22 @@ class MapWithIndexSink<SourceType, O : ObserverType> : Sink<O>, ObserverType {
         super.init(observer: observer)
     }
 
-    func on(_ event: Event<SourceType>) {
+    func on(event: Event<SourceType>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             do {
                 let mappedElement = try _selector(element, try incrementChecked(&_index))
-                forwardOn(.next(mappedElement))
+                forwardOn(.Next(mappedElement))
             }
             catch let e {
-                forwardOn(.error(e))
+                forwardOn(.Error(e))
                 dispose()
             }
-        case .error(let error):
-            forwardOn(.error(error))
+        case .Error(let error):
+            forwardOn(.Error(error))
             dispose()
-        case .completed:
-            forwardOn(.completed)
+        case .Completed:
+            forwardOn(.Completed)
             dispose()
         }
     }
@@ -91,7 +91,7 @@ class MapWithIndex<SourceType, ResultType> : Producer<ResultType> {
         _selector = selector
     }
 
-    override func run<O: ObserverType where O.E == ResultType>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == ResultType>(observer: O) -> Disposable {
         let sink = MapWithIndexSink(selector: _selector, observer: observer)
         sink.disposable = _source.subscribe(sink)
         return sink
@@ -114,11 +114,11 @@ class Map<SourceType, ResultType>: Producer<ResultType> {
         _selector = selector
 
 #if TRACE_RESOURCES
-        let _ = AtomicIncrement(&numberOfMapOperators)
+        AtomicIncrement(&numberOfMapOperators)
 #endif
     }
 
-    override func composeMap<R>(_ selector: (ResultType) throws -> R) -> Observable<R> {
+    override func composeMap<R>(selector: ResultType throws -> R) -> Observable<R> {
         let originalSelector = _selector
         return Map<SourceType, R>(source: _source, selector: { (s: SourceType) throws -> R in
             let r: ResultType = try originalSelector(s)
@@ -126,7 +126,7 @@ class Map<SourceType, ResultType>: Producer<ResultType> {
         })
     }
     
-    override func run<O: ObserverType where O.E == ResultType>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == ResultType>(observer: O) -> Disposable {
         let sink = MapSink(selector: _selector, observer: observer)
         sink.disposable = _source.subscribe(sink)
         return sink
@@ -134,7 +134,7 @@ class Map<SourceType, ResultType>: Producer<ResultType> {
 
     #if TRACE_RESOURCES
     deinit {
-        let _ = AtomicDecrement(&numberOfMapOperators)
+        AtomicDecrement(&numberOfMapOperators)
     }
     #endif
 }

@@ -9,8 +9,8 @@
 import Foundation
 
 enum TailRecursiveSinkCommand {
-    case moveNext
-    case dispose
+    case MoveNext
+    case Dispose
 }
 
 #if DEBUG || TRACE_RESOURCES
@@ -18,12 +18,12 @@ enum TailRecursiveSinkCommand {
 #endif
 
 /// This class is usually used with `Generator` version of the operators.
-class TailRecursiveSink<S: Sequence, O: ObserverType where S.Iterator.Element: ObservableConvertibleType, S.Iterator.Element.E == O.E>
+class TailRecursiveSink<S: SequenceType, O: ObserverType where S.Generator.Element: ObservableConvertibleType, S.Generator.Element.E == O.E>
     : Sink<O>
     , InvocableWithValueType {
     typealias Value = TailRecursiveSinkCommand
     typealias E = O.E
-    typealias SequenceGenerator = (generator: S.Iterator, remaining: IntMax?)
+    typealias SequenceGenerator = (generator: S.Generator, remaining: IntMax?)
 
     var _generators: [SequenceGenerator] = []
     var _disposed = false
@@ -36,34 +36,34 @@ class TailRecursiveSink<S: Sequence, O: ObserverType where S.Iterator.Element: O
         super.init(observer: observer)
     }
 
-    func run(_ sources: SequenceGenerator) -> Disposable {
+    func run(sources: SequenceGenerator) -> Disposable {
         _generators.append(sources)
 
-        schedule(.moveNext)
+        schedule(.MoveNext)
 
         return _subscription
     }
 
-    func invoke(_ command: TailRecursiveSinkCommand) {
+    func invoke(command: TailRecursiveSinkCommand) {
         switch command {
-        case .dispose:
+        case .Dispose:
             disposeCommand()
-        case .moveNext:
+        case .MoveNext:
             moveNextCommand()
         }
     }
 
     // simple implementation for now
-    func schedule(_ command: TailRecursiveSinkCommand) {
+    func schedule(command: TailRecursiveSinkCommand) {
         _gate.invoke(InvocableScheduledItem(invocable: self, state: command))
     }
 
     func done() {
-        forwardOn(.completed)
+        forwardOn(.Completed)
         dispose()
     }
 
-    func extract(_ observable: Observable<E>) -> SequenceGenerator? {
+    func extract(observable: Observable<E>) -> SequenceGenerator? {
         abstractMethod()
     }
 
@@ -132,13 +132,13 @@ class TailRecursiveSink<S: Sequence, O: ObserverType where S.Iterator.Element: O
         disposable.disposable = subscribeToNext(next!)
     }
 
-    func subscribeToNext(_ source: Observable<E>) -> Disposable {
+    func subscribeToNext(source: Observable<E>) -> Disposable {
         abstractMethod()
     }
 
     func disposeCommand() {
         _disposed = true
-        _generators.removeAll(keepingCapacity: false)
+        _generators.removeAll(keepCapacity: false)
     }
 
     override func dispose() {
@@ -146,7 +146,7 @@ class TailRecursiveSink<S: Sequence, O: ObserverType where S.Iterator.Element: O
         
         _subscription.dispose()
         
-        schedule(.dispose)
+        schedule(.Dispose)
     }
 }
 

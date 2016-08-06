@@ -38,13 +38,13 @@ class ThrottleSink<O: ObserverType>
         return StableCompositeDisposable.create(subscription, cancellable)
     }
 
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<Element>) {
+    func _synchronized_on(event: Event<Element>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             _id = _id &+ 1
             let currentId = _id
             _value = element
@@ -56,27 +56,27 @@ class ThrottleSink<O: ObserverType>
             let d = SingleAssignmentDisposable()
             self.cancellable.disposable = d
             d.disposable = scheduler.scheduleRelative(currentId, dueTime: dueTime, action: self.propagate)
-        case .error:
+        case .Error:
             _value = nil
             forwardOn(event)
             dispose()
-        case .completed:
+        case .Completed:
             if let value = _value {
                 _value = nil
-                forwardOn(.next(value))
+                forwardOn(.Next(value))
             }
-            forwardOn(.completed)
+            forwardOn(.Completed)
             dispose()
         }
     }
     
-    func propagate(_ currentId: UInt64) -> Disposable {
+    func propagate(currentId: UInt64) -> Disposable {
         _lock.lock(); defer { _lock.unlock() } // {
             let originalValue = _value
 
-            if let value = originalValue, _id == currentId {
+            if let value = originalValue where _id == currentId {
                 _value = nil
-                forwardOn(.next(value))
+                forwardOn(.Next(value))
             }
         // }
         return NopDisposable.instance
@@ -95,7 +95,7 @@ class Throttle<Element> : Producer<Element> {
         _scheduler = scheduler
     }
     
-    override func run<O: ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = ThrottleSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

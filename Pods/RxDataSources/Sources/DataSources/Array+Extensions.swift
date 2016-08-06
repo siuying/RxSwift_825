@@ -11,18 +11,18 @@ import Foundation
 import Foundation
 
 extension Array where Element: SectionModelType {
-    mutating func moveFromSourceIndexPath(_ sourceIndexPath: IndexPath, destinationIndexPath: IndexPath) {
+    mutating func moveFromSourceIndexPath(sourceIndexPath: NSIndexPath, destinationIndexPath: NSIndexPath) {
         let sourceSection = self[sourceIndexPath.section]
         var sourceItems = sourceSection.items
 
-        let sourceItem = sourceItems.remove(at: sourceIndexPath.item)
+        let sourceItem = sourceItems.removeAtIndex(sourceIndexPath.item)
 
         let sourceSectionNew = Element(original: sourceSection, items: sourceItems)
         self[sourceIndexPath.section] = sourceSectionNew
 
         let destinationSection = self[destinationIndexPath.section]
         var destinationItems = destinationSection.items
-        destinationItems.insert(sourceItem, at: destinationIndexPath.item)
+        destinationItems.insert(sourceItem, atIndex: destinationIndexPath.item)
 
         self[destinationIndexPath.section] = Element(original: destinationSection, items: destinationItems)
     }

@@ -19,30 +19,29 @@ class _RxCollectionViewReactiveArrayDataSource
     : NSObject
     , UICollectionViewDataSource {
     
-    @objc(numberOfSectionsInCollectionView:)
-    func numberOfSections(in: UICollectionView) -> Int {
+    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
 
-    func _collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func _collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 0
     }
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return _collectionView(collectionView, numberOfItemsInSection: section)
     }
 
-    private func _collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func _collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         rxAbstractMethod()
     }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        return _collectionView(collectionView, cellForItemAt: indexPath)
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        return _collectionView(collectionView, cellForItemAtIndexPath: indexPath)
     }
 }
 
-class RxCollectionViewReactiveArrayDataSourceSequenceWrapper<S: Sequence>
-    : RxCollectionViewReactiveArrayDataSource<S.Iterator.Element>
+class RxCollectionViewReactiveArrayDataSourceSequenceWrapper<S: SequenceType>
+    : RxCollectionViewReactiveArrayDataSource<S.Generator.Element>
     , RxCollectionViewDataSourceType {
     typealias Element = S
 
@@ -50,7 +49,7 @@ class RxCollectionViewReactiveArrayDataSourceSequenceWrapper<S: Sequence>
         super.init(cellFactory: cellFactory)
     }
     
-    func collectionView(_ collectionView: UICollectionView, observedEvent: Event<S>) {
+    func collectionView(collectionView: UICollectionView, observedEvent: Event<S>) {
         UIBindingObserver(UIElement: self) { collectionViewDataSource, sectionModels in
             let sections = Array(sectionModels)
             collectionViewDataSource.collectionView(collectionView, observedElements: sections)
@@ -68,14 +67,14 @@ class RxCollectionViewReactiveArrayDataSource<Element>
     
     var itemModels: [Element]? = nil
     
-    func modelAtIndex(_ index: Int) -> Element? {
+    func modelAtIndex(index: Int) -> Element? {
         return itemModels?[index]
     }
 
-    func modelAtIndexPath(_ indexPath: IndexPath) throws -> Any {
+    func modelAtIndexPath(indexPath: NSIndexPath) throws -> Any {
         precondition(indexPath.section == 0)
         guard let item = itemModels?[indexPath.item] else {
-            throw RxCocoaError.itemsNotYetBound(object: self)
+            throw RxCocoaError.ItemsNotYetBound(object: self)
         }
         return item
     }
@@ -88,17 +87,17 @@ class RxCollectionViewReactiveArrayDataSource<Element>
     
     // data source
     
-    override func _collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    override func _collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return itemModels?.count ?? 0
     }
     
-    override func _collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    override func _collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         return cellFactory(collectionView, indexPath.item, itemModels![indexPath.item])
     }
     
     // reactive
     
-    func collectionView(_ collectionView: UICollectionView, observedElements: [Element]) {
+    func collectionView(collectionView: UICollectionView, observedElements: [Element]) {
         self.itemModels = observedElements
         
         collectionView.reloadData()

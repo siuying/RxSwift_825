@@ -25,21 +25,24 @@ In case some customization need to be made on it before usage,
 internal serial queue can be customized using `serialQueueConfiguration`
 callback.
 */
-public class SerialDispatchQueueScheduler : SchedulerType {
-    public typealias TimeInterval = Foundation.TimeInterval
-    public typealias Time = Date
+public class SerialDispatchQueueScheduler: SchedulerType {
+    public typealias TimeInterval = NSTimeInterval
+    public typealias Time = NSDate
     
+    private let _serialQueue : dispatch_queue_t
+
     /**
     - returns: Current time.
     */
-    public var now : Date {
-        return Date()
+    public var now : NSDate {
+        return NSDate()
     }
-
-    let configuration: DispatchQueueConfiguration
     
-    init(serialQueue: DispatchQueue, leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
-        configuration = DispatchQueueConfiguration(queue: serialQueue, leeway: leeway)
+    // leeway for scheduling timers
+    private var _leeway: Int64 = 0
+    
+    init(serialQueue: dispatch_queue_t) {
+        _serialQueue = serialQueue
     }
 
     /**
@@ -50,10 +53,10 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     - parameter internalSerialQueueName: Name of internal serial dispatch queue.
     - parameter serialQueueConfiguration: Additional configuration of internal serial dispatch queue.
     */
-    public convenience init(internalSerialQueueName: String, serialQueueConfiguration: ((DispatchQueue) -> Void)? = nil, leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
-        let queue = DispatchQueue(label: internalSerialQueueName, attributes: [])
+    public convenience init(internalSerialQueueName: String, serialQueueConfiguration: ((dispatch_queue_t) -> Void)? = nil) {
+        let queue = dispatch_queue_create(internalSerialQueueName, DISPATCH_QUEUE_SERIAL)
         serialQueueConfiguration?(queue)
-        self.init(serialQueue: queue, leeway: leeway)
+        self.init(serialQueue: queue)
     }
     
     /**
@@ -62,12 +65,10 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     - parameter queue: Possibly concurrent dispatch queue used to perform work.
     - parameter internalSerialQueueName: Name of internal serial dispatch queue proxy.
     */
-    public convenience init(queue: DispatchQueue, internalSerialQueueName: String, leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
-        // Swift 3.0 IUO
-        let serialQueue = DispatchQueue(label: internalSerialQueueName,
-                                        attributes: [],
-                                        target: queue)
-        self.init(serialQueue: serialQueue, leeway: leeway)
+    public convenience init(queue: dispatch_queue_t, internalSerialQueueName: String) {
+        let serialQueue = dispatch_queue_create(internalSerialQueueName, DISPATCH_QUEUE_SERIAL)
+        dispatch_set_target_queue(serialQueue, queue)
+        self.init(serialQueue: serialQueue)
     }
 
     /**
@@ -77,9 +78,17 @@ public class SerialDispatchQueueScheduler : SchedulerType {
      - parameter internalSerialQueueName: Custom name for internal serial dispatch queue proxy.
      */
     @available(iOS 8, OSX 10.10, *)
-    public convenience init(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS, internalSerialQueueName: String = "rx.global_dispatch_queue.serial", leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
-        let priority = globalConcurrentQueueQOS.qos
-        self.init(queue: DispatchQueue.global(qos: priority.qosClass), internalSerialQueueName: internalSerialQueueName, leeway: leeway)
+    public convenience init(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS, internalSerialQueueName: String = "rx.global_dispatch_queue.serial") {
+        let priority = globalConcurrentQueueQOS.QOSClass
+        self.init(queue: dispatch_get_global_queue(priority, UInt(0)), internalSerialQueueName: internalSerialQueueName)
+    }
+
+    class func convertTimeIntervalToDispatchInterval(timeInterval: NSTimeInterval) -> Int64 {
+        return Int64(timeInterval * Double(NSEC_PER_SEC))
+    }
+    
+    class func convertTimeIntervalToDispatchTime(timeInterval: NSTimeInterval) -> dispatch_time_t {
+        return dispatch_time(DISPATCH_TIME_NOW, convertTimeIntervalToDispatchInterval(timeInterval))
     }
     
     /**
@@ -89,14 +98,25 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     - parameter action: Action to be executed.
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
-    public final func schedule<StateType>(_ state: StateType, action: (StateType) -> Disposable) -> Disposable {
+    public final func schedule<StateType>(state: StateType, action: (StateType) -> Disposable) -> Disposable {
         return self.scheduleInternal(state, action: action)
     }
-
-    func scheduleInternal<StateType>(_ state: StateType, action: (StateType) -> Disposable) -> Disposable {
-        return self.configuration.schedule(state, action: action)
+    
+    func scheduleInternal<StateType>(state: StateType, action: (StateType) -> Disposable) -> Disposable {
+        let cancel = SingleAssignmentDisposable()
+        
+        dispatch_async(_serialQueue) {
+            if cancel.disposed {
+                return
+            }
+            
+            
+            cancel.disposable = action(state)
+        }
+        
+        return cancel
     }
-
+    
     /**
     Schedules an action to be executed.
     
@@ -105,8 +125,27 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     - parameter action: Action to be executed.
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
-    public final func scheduleRelative<StateType>(_ state: StateType, dueTime: Foundation.TimeInterval, action: (StateType) -> Disposable) -> Disposable {
-        return self.configuration.scheduleRelative(state, dueTime: dueTime, action: action)
+    public final func scheduleRelative<StateType>(state: StateType, dueTime: NSTimeInterval, action: (StateType) -> Disposable) -> Disposable {
+        let timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _serialQueue)
+        
+        let dispatchInterval = MainScheduler.convertTimeIntervalToDispatchTime(dueTime)
+        
+        let compositeDisposable = CompositeDisposable()
+        
+        dispatch_source_set_timer(timer, dispatchInterval, DISPATCH_TIME_FOREVER, 0)
+        dispatch_source_set_event_handler(timer, {
+            if compositeDisposable.disposed {
+                return
+            }
+            compositeDisposable.addDisposable(action(state))
+        })
+        dispatch_resume(timer)
+        
+        compositeDisposable.addDisposable(AnonymousDisposable {
+            dispatch_source_cancel(timer)
+        })
+        
+        return compositeDisposable
     }
     
     /**
@@ -118,7 +157,28 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     - parameter action: Action to be executed.
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
-    public func schedulePeriodic<StateType>(_ state: StateType, startAfter: TimeInterval, period: TimeInterval, action: (StateType) -> StateType) -> Disposable {
-        return self.configuration.schedulePeriodic(state, startAfter: startAfter, period: period, action: action)
+    public func schedulePeriodic<StateType>(state: StateType, startAfter: TimeInterval, period: TimeInterval, action: (StateType) -> StateType) -> Disposable {
+        let timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _serialQueue)
+        
+        let initial = MainScheduler.convertTimeIntervalToDispatchTime(startAfter)
+        let dispatchInterval = MainScheduler.convertTimeIntervalToDispatchInterval(period)
+        
+        var timerState = state
+        
+        let validDispatchInterval = dispatchInterval < 0 ? 0 : UInt64(dispatchInterval)
+        
+        dispatch_source_set_timer(timer, initial, validDispatchInterval, 0)
+        let cancel = AnonymousDisposable {
+            dispatch_source_cancel(timer)
+        }
+        dispatch_source_set_event_handler(timer, {
+            if cancel.disposed {
+                return
+            }
+            timerState = action(timerState)
+        })
+        dispatch_resume(timer)
+        
+        return cancel
     }
 }

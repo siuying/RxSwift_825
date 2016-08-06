@@ -9,9 +9,9 @@
 import Foundation
 
 protocol CombineLatestProtocol : class {
-    func next(_ index: Int)
-    func fail(_ error: Swift.Error)
-    func done(_ index: Int)
+    func next(index: Int)
+    func fail(error: ErrorType)
+    func done(index: Int)
 }
 
 class CombineLatestSink<O: ObserverType>
@@ -29,8 +29,8 @@ class CombineLatestSink<O: ObserverType>
    
     init(arity: Int, observer: O) {
         _arity = arity
-        _hasValue = [Bool](repeating: false, count: arity)
-        _isDone = [Bool](repeating: false, count: arity)
+        _hasValue = [Bool](count: arity, repeatedValue: false)
+        _isDone = [Bool](count: arity, repeatedValue: false)
         
         super.init(observer: observer)
     }
@@ -39,7 +39,7 @@ class CombineLatestSink<O: ObserverType>
         abstractMethod()
     }
     
-    func next(_ index: Int) {
+    func next(index: Int) {
         if !_hasValue[index] {
             _hasValue[index] = true
             _numberOfValues += 1
@@ -48,10 +48,10 @@ class CombineLatestSink<O: ObserverType>
         if _numberOfValues == _arity {
             do {
                 let result = try getResult()
-                forwardOn(.next(result))
+                forwardOn(.Next(result))
             }
             catch let e {
-                forwardOn(.error(e))
+                forwardOn(.Error(e))
                 dispose()
             }
         }
@@ -66,18 +66,18 @@ class CombineLatestSink<O: ObserverType>
             }
             
             if allOthersDone {
-                forwardOn(.completed)
+                forwardOn(.Completed)
                 dispose()
             }
         }
     }
     
-    func fail(_ error: Swift.Error) {
-        forwardOn(.error(error))
+    func fail(error: ErrorType) {
+        forwardOn(.Error(error))
         dispose()
     }
     
-    func done(_ index: Int) {
+    func done(index: Int) {
         if _isDone[index] {
             return
         }
@@ -86,7 +86,7 @@ class CombineLatestSink<O: ObserverType>
         _numberOfDone += 1
 
         if _numberOfDone == _arity {
-            forwardOn(.completed)
+            forwardOn(.Completed)
             dispose()
         }
     }
@@ -114,19 +114,19 @@ class CombineLatestObserver<ElementType>
         _setLatestValue = setLatestValue
     }
     
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<Element>) {
+    func _synchronized_on(event: Event<Element>) {
         switch event {
-        case .next(let value):
+        case .Next(let value):
             _setLatestValue(value)
             _parent.next(_index)
-        case .error(let error):
+        case .Error(let error):
             _this.dispose()
             _parent.fail(error)
-        case .completed:
+        case .Completed:
             _this.dispose()
             _parent.done(_index)
         }

@@ -15,7 +15,7 @@ extension Optional {
         }
         else {
             rxDebugFatalError("Error during unwrapping optional")
-            throw RxDataSourceError.unwrappingOptional
+            throw RxDataSourceError.UnwrappingOptional
         }
    }
 }

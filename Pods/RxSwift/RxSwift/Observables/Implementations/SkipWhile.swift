@@ -19,23 +19,23 @@ class SkipWhileSink<ElementType, O: ObserverType where O.E == ElementType> : Sin
         super.init(observer: observer)
     }
 
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         switch event {
-        case .next(let value):
+        case .Next(let value):
             if !_running {
                 do {
                     _running = try !_parent._predicate(value)
                 } catch let e {
-                    forwardOn(.error(e))
+                    forwardOn(.Error(e))
                     dispose()
                     return
                 }
             }
 
             if _running {
-                forwardOn(.next(value))
+                forwardOn(.Next(value))
             }
-        case .error, .completed:
+        case .Error, .Completed:
             forwardOn(event)
             dispose()
         }
@@ -56,24 +56,24 @@ class SkipWhileSinkWithIndex<ElementType, O: ObserverType where O.E == ElementTy
         super.init(observer: observer)
     }
 
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         switch event {
-        case .next(let value):
+        case .Next(let value):
             if !_running {
                 do {
                     _running = try !_parent._predicateWithIndex(value, _index)
-                    let _ = try incrementChecked(&_index)
+                    try incrementChecked(&_index)
                 } catch let e {
-                    forwardOn(.error(e))
+                    forwardOn(.Error(e))
                     dispose()
                     return
                 }
             }
 
             if _running {
-                forwardOn(.next(value))
+                forwardOn(.Next(value))
             }
-        case .error, .completed:
+        case .Error, .Completed:
             forwardOn(event)
             dispose()
         }
@@ -100,7 +100,7 @@ class SkipWhile<Element>: Producer<Element> {
         _predicateWithIndex = predicate
     }
 
-    override func run<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         if let _ = _predicate {
             let sink = SkipWhileSink(parent: self, observer: observer)
             sink.disposable = _source.subscribe(sink)

@@ -22,7 +22,7 @@ extension UIBarButtonItem {
     */
     public var rx_enabled: AnyObserver<Bool> {
         return UIBindingObserver(UIElement: self) { UIElement, value in
-            UIElement.isEnabled = value
+            UIElement.enabled = value
         }.asObserver()
     }
 
@@ -33,11 +33,11 @@ extension UIBarButtonItem {
         let source = rx_lazyInstanceObservable(&rx_tap_key) { () -> Observable<Void> in
             Observable.create { [weak self] observer in
                 guard let control = self else {
-                    observer.on(.completed)
+                    observer.on(.Completed)
                     return NopDisposable.instance
                 }
                 let target = BarButtonItemTarget(barButtonItem: control) {
-                    observer.on(.next())
+                    observer.on(.Next())
                 }
                 return target
             }
@@ -77,7 +77,7 @@ class BarButtonItemTarget: RxTarget {
         callback = nil
     }
     
-    func action(_ sender: AnyObject) {
+    func action(sender: AnyObject) {
         callback()
     }
     

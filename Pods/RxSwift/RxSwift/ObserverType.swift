@@ -22,7 +22,7 @@ public protocol ObserverType {
     
     - parameter event: Event that occured.
     */
-    func on(_ event: Event<E>)
+    func on(event: Event<E>)
 }
 
 /**
@@ -35,22 +35,22 @@ public extension ObserverType {
     
     - parameter element: Next element to send to observer(s)
     */
-    final func onNext(_ element: E) {
-        on(.next(element))
+    final func onNext(element: E) {
+        on(.Next(element))
     }
     
     /**
     Convenience method equivalent to `on(.Completed)`
     */
     final func onCompleted() {
-        on(.completed)
+        on(.Completed)
     }
     
     /**
-    Convenience method equivalent to `on(.Error(error: Swift.Error))`
-    - parameter error: Swift.Error to send to observer(s)
+    Convenience method equivalent to `on(.Error(error: ErrorType))`
+    - parameter error: ErrorType to send to observer(s)
     */
-    final func onError(_ error: Swift.Error) {
-        on(.error(error))
+    final func onError(error: ErrorType) {
+        on(.Error(error))
     }
 }

@@ -16,39 +16,39 @@ public enum DispatchQueueSchedulerQOS {
     /**
     Identifies global dispatch queue with `QOS_CLASS_USER_INTERACTIVE`
     */
-    case userInteractive
+    case UserInteractive
     
     /**
     Identifies global dispatch queue with `QOS_CLASS_USER_INITIATED`
     */
-    case userInitiated
+    case UserInitiated
     
     /**
     Identifies global dispatch queue with `QOS_CLASS_DEFAULT`
     */
-    case `default`
+    case Default
 
     /**
      Identifies global dispatch queue with `QOS_CLASS_UTILITY`
      */
-    case utility
+    case Utility
     
     /**
      Identifies global dispatch queue with `QOS_CLASS_BACKGROUND`
      */
-    case background
+    case Background
 }
 
 
 @available(iOS 8, OSX 10.10, *)
 extension DispatchQueueSchedulerQOS {
-    var qos: DispatchQoS {
+    var QOSClass: qos_class_t {
         switch self {
-        case .userInteractive: return .userInteractive
-        case .userInitiated:   return .userInitiated
-        case .default:         return .default
-        case .utility:         return .utility
-        case .background:      return .background
+        case .UserInteractive: return QOS_CLASS_USER_INTERACTIVE
+        case .UserInitiated:   return QOS_CLASS_USER_INITIATED
+        case .Default:         return QOS_CLASS_DEFAULT
+        case .Utility:         return QOS_CLASS_UTILITY
+        case .Background:      return QOS_CLASS_BACKGROUND
         }
     }
 }

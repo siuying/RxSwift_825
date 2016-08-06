@@ -29,23 +29,23 @@ class SwitchSink<SourceType, S: ObservableConvertibleType, O: ObserverType where
         super.init(observer: observer)
     }
     
-    func run(_ source: Observable<SourceType>) -> Disposable {
+    func run(source: Observable<SourceType>) -> Disposable {
         let subscription = source.subscribe(self)
         _subscriptions.disposable = subscription
         return StableCompositeDisposable.create(_subscriptions, _innerSubscription)
     }
     
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func performMap(_ element: SourceType) throws -> S {
+    func performMap(element: SourceType) throws -> S {
         abstractMethod()
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             do {
                 let observable = try performMap(element).asObservable()
                 _hasLatest = true
@@ -60,19 +60,19 @@ class SwitchSink<SourceType, S: ObservableConvertibleType, O: ObserverType where
                 d.disposable = disposable
             }
             catch let error {
-                forwardOn(.error(error))
+                forwardOn(.Error(error))
                 dispose()
             }
-        case .error(let error):
-            forwardOn(.error(error))
+        case .Error(let error):
+            forwardOn(.Error(error))
             dispose()
-        case .completed:
+        case .Completed:
             _stopped = true
             
             _subscriptions.dispose()
             
             if !_hasLatest {
-                forwardOn(.completed)
+                forwardOn(.Completed)
                 dispose()
             }
         }
@@ -100,14 +100,14 @@ class SwitchSinkIter<SourceType, S: ObservableConvertibleType, O: ObserverType w
         self._self = _self
     }
     
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next: break
-        case .error, .completed:
+        case .Next: break
+        case .Error, .Completed:
             _self.dispose()
         }
         
@@ -116,12 +116,12 @@ class SwitchSinkIter<SourceType, S: ObservableConvertibleType, O: ObserverType w
         }
        
         switch event {
-        case .next:
+        case .Next:
             _parent.forwardOn(event)
-        case .error:
+        case .Error:
             _parent.forwardOn(event)
             _parent.dispose()
-        case .completed:
+        case .Completed:
             _parent._hasLatest = false
             if _parent._stopped {
                 _parent.forwardOn(event)
@@ -138,13 +138,13 @@ final class SwitchIdentitySink<S: ObservableConvertibleType, O: ObserverType whe
         super.init(observer: observer)
     }
 
-    override func performMap(_ element: S) throws -> S {
+    override func performMap(element: S) throws -> S {
         return element
     }
 }
 
 final class MapSwitchSink<SourceType, S: ObservableConvertibleType, O: ObserverType where O.E == S.E> : SwitchSink<SourceType, S, O> {
-    typealias Selector = (SourceType) throws -> S
+    typealias Selector = SourceType throws -> S
 
     private let _selector: Selector
 
@@ -153,7 +153,7 @@ final class MapSwitchSink<SourceType, S: ObservableConvertibleType, O: ObserverT
         super.init(observer: observer)
     }
 
-    override func performMap(_ element: SourceType) throws -> S {
+    override func performMap(element: SourceType) throws -> S {
         return try _selector(element)
     }
 }
@@ -167,7 +167,7 @@ final class Switch<S: ObservableConvertibleType> : Producer<S.E> {
         _source = source
     }
     
-    override func run<O : ObserverType where O.E == S.E>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == S.E>(observer: O) -> Disposable {
         let sink = SwitchIdentitySink<S, O>(observer: observer)
         sink.disposable = sink.run(_source)
         return sink
@@ -175,7 +175,7 @@ final class Switch<S: ObservableConvertibleType> : Producer<S.E> {
 }
 
 final class FlatMapLatest<SourceType, S: ObservableConvertibleType> : Producer<S.E> {
-    typealias Selector = (SourceType) throws -> S
+    typealias Selector = SourceType throws -> S
 
     private let _source: Observable<SourceType>
     private let _selector: Selector
@@ -185,7 +185,7 @@ final class FlatMapLatest<SourceType, S: ObservableConvertibleType> : Producer<S
         _selector = selector
     }
 
-    override func run<O : ObserverType where O.E == S.E>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == S.E>(observer: O) -> Disposable {
         let sink = MapSwitchSink<SourceType, S, O>(selector: _selector, observer: observer)
         sink.disposable = sink.run(_source)
         return sink

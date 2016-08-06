@@ -28,7 +28,7 @@ public protocol VirtualTimeConverterType {
      - parameter virtualTime: Virtual time to convert to `NSDate`.
      - returns: `NSDate` corresponding to virtual time.
     */
-    func convertFromVirtualTime(_ virtualTime: VirtualTimeUnit) -> RxTime
+    func convertFromVirtualTime(virtualTime: VirtualTimeUnit) -> RxTime
 
     /**
      Converts real time to virtual time.
@@ -36,7 +36,7 @@ public protocol VirtualTimeConverterType {
      - parameter time: `NSDate` to convert to virtual time.
      - returns: Virtual time corresponding to `NSDate`.
     */
-    func convertToVirtualTime(_ time: RxTime) -> VirtualTimeUnit
+    func convertToVirtualTime(time: RxTime) -> VirtualTimeUnit
 
     /**
      Converts from virtual time interval to `NSTimeInterval`.
@@ -44,7 +44,7 @@ public protocol VirtualTimeConverterType {
      - parameter virtualTimeInterval: Virtual time interval to convert to `NSTimeInterval`.
      - returns: `NSTimeInterval` corresponding to virtual time interval.
     */
-    func convertFromVirtualTimeInterval(_ virtualTimeInterval: VirtualTimeIntervalUnit) -> RxTimeInterval
+    func convertFromVirtualTimeInterval(virtualTimeInterval: VirtualTimeIntervalUnit) -> RxTimeInterval
 
     /**
      Converts from virtual time interval to `NSTimeInterval`.
@@ -52,7 +52,7 @@ public protocol VirtualTimeConverterType {
      - parameter timeInterval: `NSTimeInterval` to convert to virtual time interval.
      - returns: Virtual time interval corresponding to time interval.
     */
-    func convertToVirtualTimeInterval(_ timeInterval: RxTimeInterval) -> VirtualTimeIntervalUnit
+    func convertToVirtualTimeInterval(timeInterval: RxTimeInterval) -> VirtualTimeIntervalUnit
 
     /**
      Offsets virtual time by virtual time interval.
@@ -61,13 +61,13 @@ public protocol VirtualTimeConverterType {
      - parameter offset: Virtual time interval.
      - returns: Time corresponding to time offsetted by virtual time interval.
     */
-    func offsetVirtualTime(_ time: VirtualTimeUnit, offset: VirtualTimeIntervalUnit) -> VirtualTimeUnit
+    func offsetVirtualTime(time time: VirtualTimeUnit, offset: VirtualTimeIntervalUnit) -> VirtualTimeUnit
 
     /**
      This is aditional abstraction because `NSDate` is unfortunately not comparable.
      Extending `NSDate` with `Comparable` would be too risky because of possible collisions with other libraries.
     */
-    func compareVirtualTime(_ lhs: VirtualTimeUnit, _ rhs: VirtualTimeUnit) -> VirtualTimeComparison
+    func compareVirtualTime(lhs: VirtualTimeUnit, _ rhs: VirtualTimeUnit) -> VirtualTimeComparison
 }
 
 /**
@@ -80,15 +80,15 @@ public enum VirtualTimeComparison {
     /**
      lhs < rhs.
     */
-    case lessThan
+    case LessThan
     /**
      lhs == rhs.
     */
-    case equal
+    case Equal
     /**
      lhs > rhs.
     */
-    case greaterThan
+    case GreaterThan
 }
 
 extension VirtualTimeComparison {
@@ -96,20 +96,20 @@ extension VirtualTimeComparison {
      lhs < rhs.
     */
     var lessThen: Bool {
-        return self == .lessThan
+        return self == .LessThan
     }
 
     /**
     lhs > rhs
     */
     var greaterThan: Bool {
-        return self == .greaterThan
+        return self == .GreaterThan
     }
 
     /**
      lhs == rhs
     */
     var equal: Bool {
-        return self == .equal
+        return self == .Equal
     }
 }

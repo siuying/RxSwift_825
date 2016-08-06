@@ -26,35 +26,35 @@ class SamplerSink<O: ObserverType, ElementType, SampleType where O.E == ElementT
         _parent = parent
     }
     
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next:
+        case .Next:
             if let element = _parent._element {
                 if _parent._parent._onlyNew {
                     _parent._element = nil
                 }
                 
-                _parent.forwardOn(.next(element))
+                _parent.forwardOn(.Next(element))
             }
 
             if _parent._atEnd {
-                _parent.forwardOn(.completed)
+                _parent.forwardOn(.Completed)
                 _parent.dispose()
             }
-        case .error(let e):
-            _parent.forwardOn(.error(e))
+        case .Error(let e):
+            _parent.forwardOn(.Error(e))
             _parent.dispose()
-        case .completed:
+        case .Completed:
             if let element = _parent._element {
                 _parent._element = nil
-                _parent.forwardOn(.next(element))
+                _parent.forwardOn(.Next(element))
             }
             if _parent._atEnd {
-                _parent.forwardOn(.completed)
+                _parent.forwardOn(.Completed)
                 _parent.dispose()
             }
         }
@@ -91,18 +91,18 @@ class SampleSequenceSink<O: ObserverType, SampleType>
         return StableCompositeDisposable.create(_sourceSubscription, samplerSubscription)
     }
     
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<Element>) {
+    func _synchronized_on(event: Event<Element>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             _element = element
-        case .error:
+        case .Error:
             forwardOn(event)
             dispose()
-        case .completed:
+        case .Completed:
             _atEnd = true
             _sourceSubscription.dispose()
         }
@@ -121,7 +121,7 @@ class Sample<Element, SampleType> : Producer<Element> {
         _onlyNew = onlyNew
     }
     
-    override func run<O: ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = SampleSequenceSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

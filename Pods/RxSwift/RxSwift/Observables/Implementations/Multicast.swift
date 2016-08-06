@@ -33,17 +33,17 @@ class MulticastSink<S: SubjectType, O: ObserverType>: Sink<O>, ObserverType {
             return BinaryDisposable(subscription, connection)
         }
         catch let e {
-            forwardOn(.error(e))
+            forwardOn(.Error(e))
             dispose()
             return NopDisposable.instance
         }
     }
     
-    func on(_ event: Event<ResultType>) {
+    func on(event: Event<ResultType>) {
         forwardOn(event)
         switch event {
-            case .next: break
-            case .error, .completed:
+            case .Next: break
+            case .Error, .Completed:
                 dispose()
         }
     }
@@ -63,7 +63,7 @@ class Multicast<S: SubjectType, R>: Producer<R> {
         _selector = selector
     }
     
-    override func run<O: ObserverType where O.E == R>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == R>(observer: O) -> Disposable {
         let sink = MulticastSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

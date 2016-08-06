@@ -52,11 +52,11 @@ class RefCountSink<CO: ConnectableObservableType, O: ObserverType where CO.E == 
         }
     }
 
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         switch event {
-        case .next:
+        case .Next:
             forwardOn(event)
-        case .error, .completed:
+        case .Error, .Completed:
             forwardOn(event)
             dispose()
         }
@@ -76,7 +76,7 @@ class RefCount<CO: ConnectableObservableType>: Producer<CO.E> {
         _source = source
     }
     
-    override func run<O: ObserverType where O.E == CO.E>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == CO.E>(observer: O) -> Disposable {
         let sink = RefCountSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

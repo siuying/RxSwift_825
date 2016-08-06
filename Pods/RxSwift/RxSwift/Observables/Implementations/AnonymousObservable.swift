@@ -19,14 +19,14 @@ class AnonymousObservableSink<O: ObserverType> : Sink<O>, ObserverType {
         super.init(observer: observer)
     }
 
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         switch event {
-        case .next:
+        case .Next:
             if _isStopped == 1 {
                 return
             }
             forwardOn(event)
-        case .error, .completed:
+        case .Error, .Completed:
             if AtomicCompareAndSwap(0, 1, &_isStopped) {
                 forwardOn(event)
                 dispose()
@@ -34,7 +34,7 @@ class AnonymousObservableSink<O: ObserverType> : Sink<O>, ObserverType {
         }
     }
 
-    func run(_ parent: Parent) -> Disposable {
+    func run(parent: Parent) -> Disposable {
         return parent._subscribeHandler(AnyObserver(self))
     }
 }
@@ -48,7 +48,7 @@ class AnonymousObservable<Element> : Producer<Element> {
         _subscribeHandler = subscribeHandler
     }
 
-    override func run<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = AnonymousObservableSink(observer: observer)
         sink.disposable = sink.run(self)
         return sink

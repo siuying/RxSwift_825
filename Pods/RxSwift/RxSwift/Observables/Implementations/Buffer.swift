@@ -22,7 +22,7 @@ class BufferTimeCount<Element> : Producer<[Element]> {
         _scheduler = scheduler
     }
     
-    override func run<O : ObserverType where O.E == [Element]>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == [Element]>(observer: O) -> Disposable {
         let sink = BufferTimeCountSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink
@@ -62,36 +62,36 @@ class BufferTimeCountSink<Element, O: ObserverType where O.E == [Element]>
         
         let buffer = _buffer
         _buffer = []
-        forwardOn(.next(buffer))
+        forwardOn(.Next(buffer))
         
         createTimer(windowID)
     }
     
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             _buffer.append(element)
             
             if _buffer.count == _parent._count {
                 startNewWindowAndSendCurrentOne()
             }
             
-        case .error(let error):
+        case .Error(let error):
             _buffer = []
-            forwardOn(.error(error))
+            forwardOn(.Error(error))
             dispose()
-        case .completed:
-            forwardOn(.next(_buffer))
-            forwardOn(.completed)
+        case .Completed:
+            forwardOn(.Next(_buffer))
+            forwardOn(.Completed)
             dispose()
         }
     }
     
-    func createTimer(_ windowID: Int) {
+    func createTimer(windowID: Int) {
         if _timerD.disposed {
             return
         }

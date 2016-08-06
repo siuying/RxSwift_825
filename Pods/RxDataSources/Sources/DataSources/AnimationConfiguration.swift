@@ -17,9 +17,9 @@ public struct AnimationConfiguration {
   let reloadAnimation: UITableViewRowAnimation
   let deleteAnimation: UITableViewRowAnimation
   
-  public init(insertAnimation: UITableViewRowAnimation = .automatic,
-    reloadAnimation: UITableViewRowAnimation = .automatic,
-    deleteAnimation: UITableViewRowAnimation = .automatic) {
+  public init(insertAnimation: UITableViewRowAnimation = .Automatic,
+    reloadAnimation: UITableViewRowAnimation = .Automatic,
+    deleteAnimation: UITableViewRowAnimation = .Automatic) {
       self.insertAnimation = insertAnimation
       self.reloadAnimation = reloadAnimation
       self.deleteAnimation = deleteAnimation

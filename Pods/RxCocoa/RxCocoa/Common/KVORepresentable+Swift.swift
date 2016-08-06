@@ -15,7 +15,7 @@ extension Int : KVORepresentable {
      Constructs `Self` using KVO value.
      */
     public init?(KVOValue: KVOType) {
-        self.init(KVOValue.int32Value)
+        self.init(KVOValue.integerValue)
     }
 }
 
@@ -26,7 +26,7 @@ extension Int32 : KVORepresentable {
      Constructs `Self` using KVO value.
      */
     public init?(KVOValue: KVOType) {
-        self.init(KVOValue.int32Value)
+        self.init(KVOValue.intValue)
     }
 }
 
@@ -37,7 +37,7 @@ extension Int64 : KVORepresentable {
      Constructs `Self` using KVO value.
      */
     public init?(KVOValue: KVOType) {
-        self.init(KVOValue.int64Value)
+        self.init(KVOValue.longLongValue)
     }
 }
 
@@ -48,7 +48,7 @@ extension UInt : KVORepresentable {
      Constructs `Self` using KVO value.
      */
     public init?(KVOValue: KVOType) {
-        self.init(KVOValue.uintValue)
+        self.init(KVOValue.unsignedLongValue)
     }
 }
 
@@ -59,7 +59,7 @@ extension UInt32 : KVORepresentable {
      Constructs `Self` using KVO value.
      */
     public init?(KVOValue: KVOType) {
-        self.init(KVOValue.uint32Value)
+        self.init(KVOValue.unsignedIntValue)
     }
 }
 
@@ -70,7 +70,7 @@ extension UInt64 : KVORepresentable {
      Constructs `Self` using KVO value.
      */
     public init?(KVOValue: KVOType) {
-        self.init(KVOValue.uint64Value)
+        self.init(KVOValue.unsignedLongLongValue)
     }
 }
 

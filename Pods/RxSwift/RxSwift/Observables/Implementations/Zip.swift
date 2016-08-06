@@ -10,9 +10,9 @@ import Foundation
 
 protocol ZipSinkProtocol : class
 {
-    func next(_ index: Int)
-    func fail(_ error: Swift.Error)
-    func done(_ index: Int)
+    func next(index: Int)
+    func fail(error: ErrorType)
+    func done(index: Int)
 }
 
 class ZipSink<O: ObserverType> : Sink<O>, ZipSinkProtocol {
@@ -26,7 +26,7 @@ class ZipSink<O: ObserverType> : Sink<O>, ZipSinkProtocol {
     private var _isDone: [Bool]
     
     init(arity: Int, observer: O) {
-        _isDone = [Bool](repeating: false, count: arity)
+        _isDone = [Bool](count: arity, repeatedValue: false)
         _arity = arity
         
         super.init(observer: observer)
@@ -36,11 +36,11 @@ class ZipSink<O: ObserverType> : Sink<O>, ZipSinkProtocol {
         abstractMethod()
     }
     
-    func hasElements(_ index: Int) -> Bool {
+    func hasElements(index: Int) -> Bool {
         abstractMethod()
     }
     
-    func next(_ index: Int) {
+    func next(index: Int) {
         var hasValueAll = true
         
         for i in 0 ..< _arity {
@@ -53,10 +53,10 @@ class ZipSink<O: ObserverType> : Sink<O>, ZipSinkProtocol {
         if hasValueAll {
             do {
                 let result = try getResult()
-                self.forwardOn(.next(result))
+                self.forwardOn(.Next(result))
             }
             catch let e {
-                self.forwardOn(.error(e))
+                self.forwardOn(.Error(e))
                 dispose()
             }
         }
@@ -72,18 +72,18 @@ class ZipSink<O: ObserverType> : Sink<O>, ZipSinkProtocol {
             }
             
             if allOthersDone {
-                forwardOn(.completed)
+                forwardOn(.Completed)
                 self.dispose()
             }
         }
     }
     
-    func fail(_ error: Swift.Error) {
-        forwardOn(.error(error))
+    func fail(error: ErrorType) {
+        forwardOn(.Error(error))
         dispose()
     }
     
-    func done(_ index: Int) {
+    func done(index: Int) {
         _isDone[index] = true
         
         var allDone = true
@@ -96,7 +96,7 @@ class ZipSink<O: ObserverType> : Sink<O>, ZipSinkProtocol {
         }
         
         if allDone {
-            forwardOn(.completed)
+            forwardOn(.Completed)
             dispose()
         }
     }
@@ -126,30 +126,30 @@ class ZipObserver<ElementType>
         _setNextValue = setNextValue
     }
     
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         if let _ = _parent {
             switch event {
-            case .next(_):
+            case .Next(_):
                 break
-            case .error(_):
+            case .Error(_):
                 _this.dispose()
-            case .completed:
+            case .Completed:
                 _this.dispose()
             }
         }
         
         if let parent = _parent {
             switch event {
-            case .next(let value):
+            case .Next(let value):
                 _setNextValue(value)
                 parent.next(_index)
-            case .error(let error):
+            case .Error(let error):
                 parent.fail(error)
-            case .completed:
+            case .Completed:
                 parent.done(_index)
             }
         }

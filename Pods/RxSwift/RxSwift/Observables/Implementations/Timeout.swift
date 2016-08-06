@@ -38,9 +38,9 @@ class TimeoutSink<ElementType, O: ObserverType where O.E == ElementType>: Sink<O
         return StableCompositeDisposable.create(_subscription, _timerD)
     }
 
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         switch event {
-        case .next:
+        case .Next:
             var onNextWins = false
             
             _lock.performLocked() {
@@ -54,7 +54,7 @@ class TimeoutSink<ElementType, O: ObserverType where O.E == ElementType>: Sink<O
                 forwardOn(event)
                 self._createTimeoutTimer()
             }
-        case .error, .completed:
+        case .Error, .Completed:
             var onEventWins = false
             
             _lock.performLocked() {
@@ -112,7 +112,7 @@ class Timeout<Element> : Producer<Element> {
         _scheduler = scheduler
     }
     
-    override func run<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = TimeoutSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

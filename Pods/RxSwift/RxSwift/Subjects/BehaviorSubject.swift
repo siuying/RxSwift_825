@@ -62,7 +62,7 @@ public final class BehaviorSubject<Element>
     public func value() throws -> Element {
         _lock.lock(); defer { _lock.unlock() } // {
             if _disposed {
-                throw RxError.disposed(object: self)
+                throw RxError.Disposed(object: self)
             }
             
             if let error = _stoppedEvent?.error {
@@ -80,20 +80,20 @@ public final class BehaviorSubject<Element>
     
     - parameter event: Event to send to the observers.
     */
-    public func on(_ event: Event<E>) {
+    public func on(event: Event<E>) {
         _lock.lock(); defer { _lock.unlock() }
         _synchronized_on(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         if _stoppedEvent != nil || _disposed {
             return
         }
         
         switch event {
-        case .next(let value):
+        case .Next(let value):
             _value = value
-        case .error, .completed:
+        case .Error, .Completed:
             _stoppedEvent = event
         }
         
@@ -106,14 +106,14 @@ public final class BehaviorSubject<Element>
     - parameter observer: Observer to subscribe to the subject.
     - returns: Disposable object that can be used to unsubscribe the observer from the subject.
     */
-    public override func subscribe<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    public override func subscribe<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         _lock.lock(); defer { _lock.unlock() }
         return _synchronized_subscribe(observer)
     }
 
-    func _synchronized_subscribe<O : ObserverType where O.E == E>(_ observer: O) -> Disposable {
+    func _synchronized_subscribe<O : ObserverType where O.E == E>(observer: O) -> Disposable {
         if _disposed {
-            observer.on(.error(RxError.disposed(object: self)))
+            observer.on(.Error(RxError.Disposed(object: self)))
             return NopDisposable.instance
         }
         
@@ -123,17 +123,17 @@ public final class BehaviorSubject<Element>
         }
         
         let key = _observers.insert(observer.asObserver())
-        observer.on(.next(_value))
+        observer.on(.Next(_value))
     
         return SubscriptionDisposable(owner: self, key: key)
     }
 
-    func synchronizedUnsubscribe(_ disposeKey: DisposeKey) {
+    func synchronizedUnsubscribe(disposeKey: DisposeKey) {
         _lock.lock(); defer { _lock.unlock() }
         _synchronized_unsubscribe(disposeKey)
     }
 
-    func _synchronized_unsubscribe(_ disposeKey: DisposeKey) {
+    func _synchronized_unsubscribe(disposeKey: DisposeKey) {
         if _disposed {
             return
         }

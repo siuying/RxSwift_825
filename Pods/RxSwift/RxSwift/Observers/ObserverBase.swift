@@ -13,13 +13,13 @@ class ObserverBase<ElementType> : Disposable, ObserverType {
 
     private var _isStopped: AtomicInt = 0
 
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         switch event {
-        case .next:
+        case .Next:
             if _isStopped == 0 {
                 onCore(event)
             }
-        case .error, .completed:
+        case .Error, .Completed:
 
             if !AtomicCompareAndSwap(0, 1, &_isStopped) {
                 return
@@ -29,7 +29,7 @@ class ObserverBase<ElementType> : Disposable, ObserverType {
         }
     }
 
-    func onCore(_ event: Event<E>) {
+    func onCore(event: Event<E>) {
         abstractMethod()
     }
 

@@ -21,22 +21,21 @@
     let AtomicIncrement = OSAtomicIncrement32
     let AtomicDecrement = OSAtomicDecrement32
 
-    extension Thread {
-        static func setThreadLocalStorageValue<T: AnyObject>(_ value: T?, forKey key: AnyObject & NSCopying
-            ) {
-            let currentThread = Thread.current
+    extension NSThread {
+        static func setThreadLocalStorageValue<T: AnyObject>(value: T?, forKey key: protocol<AnyObject, NSCopying>) {
+            let currentThread = NSThread.currentThread()
             let threadDictionary = currentThread.threadDictionary
 
             if let newValue = value {
                 threadDictionary.setObject(newValue, forKey: key)
             }
             else {
-                threadDictionary.removeObject(forKey: key)
+                threadDictionary.removeObjectForKey(key)
             }
 
         }
-        static func getThreadLocalStorageValueForKey<T>(_ key: AnyObject & NSCopying) -> T? {
-            let currentThread = Thread.current
+        static func getThreadLocalStorageValueForKey<T>(key: protocol<AnyObject, NSCopying>) -> T? {
+            let currentThread = NSThread.currentThread()
             let threadDictionary = currentThread.threadDictionary
             
             return threadDictionary[key] as? T

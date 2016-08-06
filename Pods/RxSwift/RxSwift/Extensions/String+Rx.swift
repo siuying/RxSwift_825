@@ -12,10 +12,10 @@ extension String {
     /**
      This is needed because on Linux Swift doesn't have `rangeOfString(..., options: .BackwardsSearch)`
     */
-    func lastIndexOf(_ character: Character) -> Index? {
+    func lastIndexOf(character: Character) -> Index? {
         var index = endIndex
         while index > startIndex {
-            index = self.index(before: index)
+            index = index.predecessor()
             if self[index] == character {
                 return index
             }

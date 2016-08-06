@@ -28,14 +28,14 @@ final class ShareReplay1WhileConnected<Element>
         self._source = source
     }
 
-    override func subscribe<O : ObserverType where O.E == E>(_ observer: O) -> Disposable {
+    override func subscribe<O : ObserverType where O.E == E>(observer: O) -> Disposable {
         _lock.lock(); defer { _lock.unlock() }
         return _synchronized_subscribe(observer)
     }
 
-    func _synchronized_subscribe<O : ObserverType where O.E == E>(_ observer: O) -> Disposable {
+    func _synchronized_subscribe<O : ObserverType where O.E == E>(observer: O) -> Disposable {
         if let element = self._element {
-            observer.on(.next(element))
+            observer.on(.Next(element))
         }
 
         let initialCount = self._observers.count
@@ -52,12 +52,12 @@ final class ShareReplay1WhileConnected<Element>
         return SubscriptionDisposable(owner: self, key: disposeKey)
     }
 
-    func synchronizedUnsubscribe(_ disposeKey: DisposeKey) {
+    func synchronizedUnsubscribe(disposeKey: DisposeKey) {
         _lock.lock(); defer { _lock.unlock() }
         _synchronized_unsubscribe(disposeKey)
     }
 
-    func _synchronized_unsubscribe(_ disposeKey: DisposeKey) {
+    func _synchronized_unsubscribe(disposeKey: DisposeKey) {
         // if already unsubscribed, just return
         if self._observers.removeKey(disposeKey) == nil {
             return
@@ -70,17 +70,17 @@ final class ShareReplay1WhileConnected<Element>
         }
     }
 
-    func on(_ event: Event<E>) {
+    func on(event: Event<E>) {
         _lock.lock(); defer { _lock.unlock() }
         _synchronized_on(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(event: Event<E>) {
         switch event {
-        case .next(let element):
+        case .Next(let element):
             _element = element
             _observers.on(event)
-        case .error, .completed:
+        case .Error, .Completed:
             _element = nil
             _connection?.dispose()
             _connection = nil

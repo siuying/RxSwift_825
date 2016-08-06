@@ -8,8 +8,8 @@
 
 import Foundation
 
-class ObservableSequenceSink<O: ObserverType> : Sink<O> {
-    typealias Parent = ObservableSequence<O.E>
+class SequenceSink<O: ObserverType> : Sink<O> {
+    typealias Parent = Sequence<O.E>
 
     private let _parent: Parent
 
@@ -21,17 +21,17 @@ class ObservableSequenceSink<O: ObserverType> : Sink<O> {
     func run() -> Disposable {
         return _parent._scheduler!.scheduleRecursive((0, _parent._elements)) { (state, recurse) in
             if state.0 < state.1.count {
-                self.forwardOn(.next(state.1[state.0]))
+                self.forwardOn(.Next(state.1[state.0]))
                 recurse((state.0 + 1, state.1))
             }
             else {
-                self.forwardOn(.completed)
+                self.forwardOn(.Completed)
             }
         }
     }
 }
 
-class ObservableSequence<E> : Producer<E> {
+class Sequence<E> : Producer<E> {
     private let _elements: [E]
     private let _scheduler: ImmediateSchedulerType?
 
@@ -40,18 +40,18 @@ class ObservableSequence<E> : Producer<E> {
         _scheduler = scheduler
     }
 
-    override func subscribe<O : ObserverType where O.E == E>(_ observer: O) -> Disposable {
+    override func subscribe<O : ObserverType where O.E == E>(observer: O) -> Disposable {
         // optimized version without scheduler
         guard _scheduler != nil else {
             for element in _elements {
-                observer.on(.next(element))
+                observer.on(.Next(element))
             }
             
-            observer.on(.completed)
+            observer.on(.Completed)
             return NopDisposable.instance
         }
 
-        let sink = ObservableSequenceSink(parent: self, observer: observer)
+        let sink = SequenceSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink
     }

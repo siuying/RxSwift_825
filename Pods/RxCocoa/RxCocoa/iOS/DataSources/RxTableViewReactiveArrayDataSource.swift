@@ -19,30 +19,30 @@ class _RxTableViewReactiveArrayDataSource
     : NSObject
     , UITableViewDataSource {
     
-    func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
     }
    
-    func _tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func _tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 0
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return _tableView(tableView, numberOfRowsInSection: section)
     }
 
-    private func _tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func _tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         rxAbstractMethod()
     }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return _tableView(tableView, cellForRowAt: indexPath)
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        return _tableView(tableView, cellForRowAtIndexPath: indexPath)
     }
 }
 
 
-class RxTableViewReactiveArrayDataSourceSequenceWrapper<S: Sequence>
-    : RxTableViewReactiveArrayDataSource<S.Iterator.Element>
+class RxTableViewReactiveArrayDataSourceSequenceWrapper<S: SequenceType>
+    : RxTableViewReactiveArrayDataSource<S.Generator.Element>
     , RxTableViewDataSourceType {
     typealias Element = S
 
@@ -50,7 +50,7 @@ class RxTableViewReactiveArrayDataSourceSequenceWrapper<S: Sequence>
         super.init(cellFactory: cellFactory)
     }
 
-    func tableView(_ tableView: UITableView, observedEvent: Event<S>) {
+    func tableView(tableView: UITableView, observedEvent: Event<S>) {
         UIBindingObserver(UIElement: self) { tableViewDataSource, sectionModels in
             let sections = Array(sectionModels)
             tableViewDataSource.tableView(tableView, observedElements: sections)
@@ -66,14 +66,14 @@ class RxTableViewReactiveArrayDataSource<Element>
     
     var itemModels: [Element]? = nil
     
-    func modelAtIndex(_ index: Int) -> Element? {
+    func modelAtIndex(index: Int) -> Element? {
         return itemModels?[index]
     }
 
-    func modelAtIndexPath(_ indexPath: IndexPath) throws -> Any {
+    func modelAtIndexPath(indexPath: NSIndexPath) throws -> Any {
         precondition(indexPath.section == 0)
         guard let item = itemModels?[indexPath.item] else {
-            throw RxCocoaError.itemsNotYetBound(object: self)
+            throw RxCocoaError.ItemsNotYetBound(object: self)
         }
         return item
     }
@@ -84,17 +84,17 @@ class RxTableViewReactiveArrayDataSource<Element>
         self.cellFactory = cellFactory
     }
     
-    override func _tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func _tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemModels?.count ?? 0
     }
     
-    override func _tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func _tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         return cellFactory(tableView, indexPath.item, itemModels![indexPath.row])
     }
     
     // reactive
     
-    func tableView(_ tableView: UITableView, observedElements: [Element]) {
+    func tableView(tableView: UITableView, observedElements: [Element]) {
         self.itemModels = observedElements
         
         tableView.reloadData()

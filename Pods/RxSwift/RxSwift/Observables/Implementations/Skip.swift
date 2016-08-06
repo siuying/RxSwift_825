@@ -24,20 +24,20 @@ class SkipCountSink<ElementType, O: ObserverType where O.E == ElementType> : Sin
         super.init(observer: observer)
     }
     
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         switch event {
-        case .next(let value):
+        case .Next(let value):
             
             if remaining <= 0 {
-                forwardOn(.next(value))
+                forwardOn(.Next(value))
             }
             else {
                 remaining -= 1
             }
-        case .error:
+        case .Error:
             forwardOn(event)
             self.dispose()
-        case .completed:
+        case .Completed:
             forwardOn(event)
             self.dispose()
         }
@@ -54,7 +54,7 @@ class SkipCount<Element>: Producer<Element> {
         self.count = count
     }
     
-    override func run<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = SkipCountSink(parent: self, observer: observer)
         sink.disposable = source.subscribe(sink)
 
@@ -78,16 +78,16 @@ class SkipTimeSink<ElementType, O: ObserverType where O.E == ElementType> : Sink
         super.init(observer: observer)
     }
     
-    func on(_ event: Event<Element>) {
+    func on(event: Event<Element>) {
         switch event {
-        case .next(let value):
+        case .Next(let value):
             if open {
-                forwardOn(.next(value))
+                forwardOn(.Next(value))
             }
-        case .error:
+        case .Error:
             forwardOn(event)
             self.dispose()
-        case .completed:
+        case .Completed:
             forwardOn(event)
             self.dispose()
         }
@@ -120,7 +120,7 @@ class SkipTime<Element>: Producer<Element> {
         self.duration = duration
     }
     
-    override func run<O : ObserverType where O.E == Element>(_ observer: O) -> Disposable {
+    override func run<O : ObserverType where O.E == Element>(observer: O) -> Disposable {
         let sink = SkipTimeSink(parent: self, observer: observer)
         sink.disposable = sink.run()
         return sink

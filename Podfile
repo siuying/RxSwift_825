@@ -6,20 +6,11 @@ target 'RxDataSourcesExample' do
   use_frameworks!
 
   # RxSwift is a functional reactive programming framework
-  pod 'RxSwift', git: 'https://github.com/ReactiveX/RxSwift.git', branch: 'swift-3.0'
+  pod 'RxSwift'
 
   # RxCocoa is Cocoa extension to RxSwift
-  pod 'RxCocoa', git: 'https://github.com/ReactiveX/RxSwift.git', branch: 'swift-3.0'
+  pod 'RxCocoa'
 
   # RxDataSources is UITableView/UICollectionView datasource extension for RxSwift
-  pod 'RxDataSources', git: 'https://github.com/siuying/RxDataSources.git', branch: 'swift-3.0'
-end
-
-post_install do |installer|
-    installer.pods_project.targets.each do |target|
-        target.build_configurations.each do |config|
-            # slience Xcode for asking us migrate to Swift 3
-            config.build_settings['SWIFT_VERSION'] = '3.0'
-        end
-    end
+  pod 'RxDataSources'
 end

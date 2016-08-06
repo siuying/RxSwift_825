@@ -22,28 +22,28 @@ class ReduceSink<SourceType, AccumulateType, O: ObserverType> : Sink<O>, Observe
         super.init(observer: observer)
     }
     
-    func on(_ event: Event<SourceType>) {
+    func on(event: Event<SourceType>) {
         switch event {
-        case .next(let value):
+        case .Next(let value):
             do {
                 _accumulation = try _parent._accumulator(_accumulation, value)
             }
             catch let e {
-                forwardOn(.error(e))
+                forwardOn(.Error(e))
                 dispose()
             }
-        case .error(let e):
-            forwardOn(.error(e))
+        case .Error(let e):
+            forwardOn(.Error(e))
             dispose()
-        case .completed:
+        case .Completed:
             do {
                 let result = try _parent._mapResult(_accumulation)
-                forwardOn(.next(result))
-                forwardOn(.completed)
+                forwardOn(.Next(result))
+                forwardOn(.Completed)
                 dispose()
             }
             catch let e {
-                forwardOn(.error(e))
+                forwardOn(.Error(e))
                 dispose()
             }
         }
@@ -66,7 +66,7 @@ class Reduce<SourceType, AccumulateType, ResultType> : Producer<ResultType> {
         _mapResult = mapResult
     }
     
-    override func run<O: ObserverType where O.E == ResultType>(_ observer: O) -> Disposable {
+    override func run<O: ObserverType where O.E == ResultType>(observer: O) -> Disposable {
         let sink = ReduceSink(parent: self, observer: observer)
         sink.disposable = _source.subscribe(sink)
         return sink
