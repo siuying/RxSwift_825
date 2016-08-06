@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11185.3" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="dGH-fz-QnJ">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11151.4"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="2aJ-9H-nfm">
+            <objects>
+                <viewController id="dGH-fz-QnJ" customClass="ViewController" customModule="RxDataSourcesExample" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="h8E-v5-el5"/>
+                        <viewControllerLayoutGuide type="bottom" id="YC8-ka-DzQ"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="fkC-eo-lc1">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Ixi-xi-qBG">
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="xtC-pm-bt9">
+                                    <size key="itemSize" width="117" height="107"/>
+                                    <size key="headerReferenceSize" width="50" height="50"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Cell" id="fD9-yJ-5hz" customClass="DataCell" customModule="RxDataSourcesExample" customModuleProvider="target">
+                                        <frame key="frameInset" minY="50" width="117" height="107"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                            <rect key="frame" x="0.0" y="0.0" width="117" height="107"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="48n-km-6q1">
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </view>
+                                        <constraints>
+                                            <constraint firstItem="48n-km-6q1" firstAttribute="width" secondItem="fD9-yJ-5hz" secondAttribute="width" id="Hrx-kn-kpN"/>
+                                            <constraint firstItem="48n-km-6q1" firstAttribute="centerX" secondItem="fD9-yJ-5hz" secondAttribute="centerX" id="MmD-aX-fJg"/>
+                                            <constraint firstItem="48n-km-6q1" firstAttribute="centerY" secondItem="fD9-yJ-5hz" secondAttribute="centerY" id="uiG-gA-LrT"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="value" destination="48n-km-6q1" id="lMW-c3-V2Q"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                </cells>
+                                <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Section" id="h6n-Yk-KlG" customClass="DataSectionView" customModule="RxDataSourcesExample" customModuleProvider="target">
+                                    <frame key="frameInset" width="375" height="50"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2t3-aw-cBq">
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="2t3-aw-cBq" firstAttribute="width" secondItem="h6n-Yk-KlG" secondAttribute="width" id="4C2-74-vnD"/>
+                                        <constraint firstItem="2t3-aw-cBq" firstAttribute="centerY" secondItem="h6n-Yk-KlG" secondAttribute="centerY" id="Th2-MT-yko"/>
+                                        <constraint firstItem="2t3-aw-cBq" firstAttribute="centerX" secondItem="h6n-Yk-KlG" secondAttribute="centerX" id="oaM-6l-tIX"/>
+                                    </constraints>
+                                    <connections>
+                                        <outlet property="value" destination="2t3-aw-cBq" id="kWc-LB-6JX"/>
+                                    </connections>
+                                </collectionReusableView>
+                            </collectionView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="Ixi-xi-qBG" secondAttribute="trailing" id="FFu-8G-dt2"/>
+                            <constraint firstItem="Ixi-xi-qBG" firstAttribute="leading" secondItem="fkC-eo-lc1" secondAttribute="leading" id="NmV-Oa-X40"/>
+                            <constraint firstItem="YC8-ka-DzQ" firstAttribute="top" secondItem="Ixi-xi-qBG" secondAttribute="bottom" id="Z3M-D6-Y4v"/>
+                            <constraint firstItem="Ixi-xi-qBG" firstAttribute="top" secondItem="fkC-eo-lc1" secondAttribute="top" id="fBe-kK-mGC"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="collectionView" destination="Ixi-xi-qBG" id="gX6-Uw-C0L"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="uTw-7B-VvV" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-258.39999999999998" y="60.719640179910051"/>
+        </scene>
+    </scenes>
+</document>
