@@ -12,7 +12,7 @@ target 'RxDataSourcesExample' do
   pod 'RxCocoa', git: 'https://github.com/ReactiveX/RxSwift.git', branch: 'swift-3.0'
 
   # RxDataSources is UITableView/UICollectionView datasource extension for RxSwift
-  pod 'RxDataSources', git: 'https://github.com/siuying/RxDataSources.git', branch: 'swift-3.0'
+  pod 'RxDataSources', git: 'https://github.com/mokumoku/RxDataSources.git', branch: 'swift-3.0'
 end
 
 post_install do |installer|

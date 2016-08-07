@@ -29,51 +29,8 @@ public struct CellViewModel {
     }
 }
 
-// MARK: RxDataSources - IdentifiableType
-
-extension CellViewModel: IdentifiableType, Equatable {
-    public typealias Identity = String
-    
-    public var identity: String {
-        return self.id
-    }
-}
-
-public func == (lhs: CellViewModel, rhs: CellViewModel) -> Bool {
-    return lhs.id == rhs.id
-}
-
-struct CellSection {
-    var header: String
-    var items: [CellViewModel]
-    
-    init(header: String, items: [CellViewModel]) {
-        self.header = header
-        self.items = items
-    }
-}
-
-// MARK: RxDataSources - AnimatableSectionModelType
-
-extension CellSection: AnimatableSectionModelType {
-    typealias Item = CellViewModel
-    
-    init(original: CellSection, items: [CellViewModel]) {
-        self = original
-        self.items = items
-    }
-}
-
-// MARK: RxDataSources - IdentifiableType
-
-extension CellSection: IdentifiableType {
-    var identity: String {
-        return self.header
-    }
-}
-
 class ViewController: UIViewController {
-    @IBOutlet weak var collectionView: UICollectionView!
+    var collectionView: UICollectionView!
     private let disposeBag = DisposeBag()
 
     override func loadView() {
@@ -81,30 +38,14 @@ class ViewController: UIViewController {
 
         let layout = UICollectionViewFlowLayout()
         layout.estimatedItemSize = CGSize(width: 160, height: 240)
+        self.collectionView = UICollectionView(frame: self.view.bounds, collectionViewLayout: layout)
         self.collectionView!.collectionViewLayout = layout
+        self.collectionView!.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.view.addSubview(self.collectionView!)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        self.collectionView!.dataSource = nil
-        
-        let dataSource = RxCollectionViewSectionedReloadDataSource<CellSection>()
-        dataSource.configureCell = { datasource, collectionView, indexPath, item in
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? DataCell else {
-                fatalError("invalide cell")
-            }
-            cell.value?.text = item.title
-            return cell
-        }
-       
-        dataSource.supplementaryViewFactory = { (ds ,cv, kind, ip) in
-            let section = cv.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "Section", for: ip) as! DataSectionView
-            
-            section.value!.text = "\(ds.sectionAtIndex(ip.section).header)"
-            
-            return section
-        }
 
         let items = [
             CellViewModel(id: "1", title: "Hello"),
@@ -112,10 +53,17 @@ class ViewController: UIViewController {
             CellViewModel(id: "3", title: "Foo"),
             CellViewModel(id: "4", title: "Bar"),
         ]
-        let sections = Observable.just([CellSection(header: "root", items: items)]).shareReplay(1)
-        sections
-            .subscribeOn(MainScheduler.instance)
-            .bindTo(self.collectionView!.rx_itemsWithDataSource(dataSource))
-            .addDisposableTo(self.disposeBag)
+        
+        Observable
+            .just(items)
+            .bindTo(collectionView.rx_itemsWithCellFactory) { collectionView, row, model in
+                let indexPath = IndexPath(item: row, section: 0)
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? DataCell else {
+                    fatalError("missing cell")
+                }
+                cell.value?.text = model.title
+                return cell
+            }
+            .addDisposableTo(disposeBag)
     }
 }
