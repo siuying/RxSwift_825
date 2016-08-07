@@ -13,10 +13,14 @@ import RxDataSources
 
 class DataCell: UICollectionViewCell {
     @IBOutlet var value: UILabel?
-}
-
-class DataSectionView: UICollectionReusableView {
-    @IBOutlet var value: UILabel?
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        value = UILabel(frame: contentView.bounds)
+        value?.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+        contentView.addSubview(value!)
+    }
 }
 
 public struct CellViewModel {
@@ -41,7 +45,10 @@ class ViewController: UIViewController {
         self.collectionView = UICollectionView(frame: self.view.bounds, collectionViewLayout: layout)
         self.collectionView!.collectionViewLayout = layout
         self.collectionView!.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.collectionView!.backgroundColor = UIColor.white
         self.view.addSubview(self.collectionView!)
+        
+        self.collectionView!.register(DataCell.classForCoder(), forCellWithReuseIdentifier: "Cell")
     }
 
     override func viewDidLoad() {
