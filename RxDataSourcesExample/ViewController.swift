@@ -56,6 +56,8 @@ class ViewController: UIViewController {
         self.collectionView!.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
         self.collectionView!.backgroundColor = UIColor.whiteColor()
         self.view.addSubview(self.collectionView!)
+        
+        self.collectionView!.registerClass(DataCell.classForCoder(), forCellWithReuseIdentifier: "Cell")
     }
     
     override func viewDidLoad() {
