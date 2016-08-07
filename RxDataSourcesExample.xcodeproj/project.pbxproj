@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		543A50021D5642C40015E41D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543A50011D5642C40015E41D /* AppDelegate.swift */; };
 		543A50041D5642C40015E41D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543A50031D5642C40015E41D /* ViewController.swift */; };
-		543A50071D5642C40015E41D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 543A50051D5642C40015E41D /* Main.storyboard */; };
 		543A50091D5642C40015E41D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 543A50081D5642C40015E41D /* Assets.xcassets */; };
 		E99A5B0917BBF560B54F2ED8 /* Pods_RxDataSourcesExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5871681ADF0DF3B829A0033A /* Pods_RxDataSourcesExample.framework */; };
 /* End PBXBuildFile section */
@@ -18,7 +17,6 @@
 		543A4FFE1D5642C40015E41D /* RxDataSourcesExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RxDataSourcesExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		543A50011D5642C40015E41D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		543A50031D5642C40015E41D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		543A50061D5642C40015E41D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		543A50081D5642C40015E41D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		543A500D1D5642C40015E41D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5871681ADF0DF3B829A0033A /* Pods_RxDataSourcesExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RxDataSourcesExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -61,7 +59,6 @@
 			children = (
 				543A50011D5642C40015E41D /* AppDelegate.swift */,
 				543A50031D5642C40015E41D /* ViewController.swift */,
-				543A50051D5642C40015E41D /* Main.storyboard */,
 				543A50081D5642C40015E41D /* Assets.xcassets */,
 				543A500D1D5642C40015E41D /* Info.plist */,
 			);
@@ -149,7 +146,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				543A50091D5642C40015E41D /* Assets.xcassets in Resources */,
-				543A50071D5642C40015E41D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,17 +210,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		543A50051D5642C40015E41D /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				543A50061D5642C40015E41D /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		543A500E1D5642C40015E41D /* Debug */ = {
