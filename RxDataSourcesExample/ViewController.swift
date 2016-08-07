@@ -23,16 +23,6 @@ class DataCell: UICollectionViewCell {
     }
 }
 
-public struct CellViewModel {
-    public let id: String
-    public let title: String
-
-    public init(id: String, title: String) {
-        self.id = id
-        self.title = title
-    }
-}
-
 class ViewController: UIViewController {
     var collectionView: UICollectionView!
     private let disposeBag = DisposeBag()
@@ -55,20 +45,20 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         let items = [
-            CellViewModel(id: "1", title: "Hello"),
-            CellViewModel(id: "2", title: "World"),
-            CellViewModel(id: "3", title: "Foo"),
-            CellViewModel(id: "4", title: "Bar"),
+            "Hello",
+            "World",
+            "Foo",
+            "Bar",
         ]
         
         Observable
             .just(items)
-            .bindTo(collectionView.rx_itemsWithCellFactory) { collectionView, row, model in
+            .bindTo(collectionView.rx_itemsWithCellFactory) { collectionView, row, title in
                 let indexPath = IndexPath(item: row, section: 0)
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? DataCell else {
                     fatalError("missing cell")
                 }
-                cell.value?.text = model.title
+                cell.value?.text = title
                 return cell
             }
             .addDisposableTo(disposeBag)
